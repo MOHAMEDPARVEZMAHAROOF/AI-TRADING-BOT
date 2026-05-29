@@ -11,6 +11,7 @@ import {
   Menu,
   X,
   Sparkles,
+  Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +19,7 @@ const NAV = [
   { href: "/trading", label: "AI Trader", icon: LineChart, desc: "Manual assistant" },
   { href: "/autonomous", label: "Autonomous", icon: Bot, desc: "Agent network" },
   { href: "/portfolio", label: "Portfolio", icon: Wallet, desc: "Holdings & history" },
+  { href: "/settings", label: "Settings", icon: Settings, desc: "Profile & alerts" },
 ];
 
 export function Sidebar() {

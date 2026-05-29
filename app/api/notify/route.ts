@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { buildEmail, type EmailPayload } from "@/lib/email/templates";
+import { ACTIVEPIECES_WEBHOOK_URL } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 
@@ -25,13 +26,11 @@ export async function POST(req: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Resolve recipient: prefer the authenticated user, fall back to body.to.
   const recipient = user?.email || body.to;
   if (!recipient) {
     return NextResponse.json({ error: "No recipient" }, { status: 400 });
   }
 
-  // Respect the user's notification preference (if a profile exists).
   let notificationsEnabled = true;
   if (user) {
     const { data: profile } = await supabase
@@ -42,7 +41,6 @@ export async function POST(req: NextRequest) {
     if (profile && profile.email_notifications === false) notificationsEnabled = false;
     if (!body.name && profile?.full_name) body.name = profile.full_name;
 
-    // Record the event (best-effort, non-blocking on failure).
     await supabase.from("trade_events").insert({
       user_id: user.id,
       event_type: body.type,
@@ -60,11 +58,10 @@ export async function POST(req: NextRequest) {
 
   const { subject, html } = buildEmail({ ...body, appUrl });
 
-  const webhook = process.env.ACTIVEPIECES_WEBHOOK_URL;
   let emailSent = false;
-  if (notificationsEnabled && webhook) {
+  if (notificationsEnabled && ACTIVEPIECES_WEBHOOK_URL) {
     try {
-      const res = await fetch(webhook, {
+      const res = await fetch(ACTIVEPIECES_WEBHOOK_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ to: recipient, subject, html, type: body.type }),
