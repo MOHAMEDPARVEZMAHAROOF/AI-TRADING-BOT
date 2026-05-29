@@ -1,12 +1,19 @@
 "use client";
 
 import toast from "react-hot-toast";
+import { ChevronRight } from "lucide-react";
 import type { Holding } from "@/lib/types";
 import { usePortfolioStore } from "@/lib/store/portfolioStore";
 import { SignalBadge } from "@/components/shared/SignalBadge";
 import { cn } from "@/lib/utils";
 
-export function HoldingsTable({ holdings }: { holdings: Holding[] }) {
+export function HoldingsTable({
+  holdings,
+  onSelect,
+}: {
+  holdings: Holding[];
+  onSelect?: (symbol: string) => void;
+}) {
   const closePosition = usePortfolioStore((s) => s.closePosition);
 
   if (holdings.length === 0) {
@@ -22,7 +29,7 @@ export function HoldingsTable({ holdings }: { holdings: Holding[] }) {
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[760px] text-sm">
+      <table className="w-full min-w-[820px] text-sm">
         <thead>
           <tr className="text-left text-[11px] uppercase tracking-wide text-white/40">
             <th className="pb-2 pr-3 font-medium">Symbol</th>
@@ -43,34 +50,29 @@ export function HoldingsTable({ holdings }: { holdings: Holding[] }) {
             const pnlPct = ((h.currentPrice - h.avgEntry) / h.avgEntry) * 100;
             const win = pnl >= 0;
             return (
-              <tr key={h.symbol} className="border-t border-white/5">
+              <tr
+                key={h.symbol}
+                onClick={() => onSelect?.(h.symbol)}
+                className="cursor-pointer border-t border-white/5 transition hover:bg-white/[0.03]"
+              >
                 <td className="py-2.5 pr-3">
-                  <div className="font-semibold text-white">{h.symbol}</div>
-                  <div className="font-sans text-[10px] text-white/40">
+                  <div className="flex items-center gap-1.5 font-semibold text-white">
+                    <ChevronRight className="h-3.5 w-3.5 text-gold-primary/60" />
+                    {h.symbol}
+                  </div>
+                  <div className="pl-5 font-sans text-[10px] text-white/40">
                     {h.source === "auto" ? "🤖 Auto" : "Manual"}
                   </div>
                 </td>
                 <td className="py-2.5 pr-3 text-white/70">{h.quantity}</td>
-                <td className="py-2.5 pr-3 text-white/70">
-                  {h.currency}
-                  {h.avgEntry.toFixed(2)}
-                </td>
-                <td className="py-2.5 pr-3 text-white/90">
-                  {h.currency}
-                  {h.currentPrice.toFixed(2)}
-                </td>
-                <td className="py-2.5 pr-3 text-white/70">
-                  {h.currency}
-                  {value.toFixed(2)}
+                <td className="py-2.5 pr-3 text-white/70">{h.currency}{h.avgEntry.toFixed(2)}</td>
+                <td className="py-2.5 pr-3 text-white/90">{h.currency}{h.currentPrice.toFixed(2)}</td>
+                <td className="py-2.5 pr-3 text-white/70">{h.currency}{value.toFixed(2)}</td>
+                <td className={cn("py-2.5 pr-3", win ? "text-profit" : "text-loss")}>
+                  {win ? "+" : ""}{h.currency}{pnl.toFixed(2)}
                 </td>
                 <td className={cn("py-2.5 pr-3", win ? "text-profit" : "text-loss")}>
-                  {win ? "+" : ""}
-                  {h.currency}
-                  {pnl.toFixed(2)}
-                </td>
-                <td className={cn("py-2.5 pr-3", win ? "text-profit" : "text-loss")}>
-                  {win ? "+" : ""}
-                  {pnlPct.toFixed(1)}%
+                  {win ? "+" : ""}{pnlPct.toFixed(1)}%
                 </td>
                 <td className="py-2.5 pr-3">
                   {h.aiSignal ? (
@@ -80,15 +82,27 @@ export function HoldingsTable({ holdings }: { holdings: Holding[] }) {
                   )}
                 </td>
                 <td className="py-2.5">
-                  <button
-                    onClick={() => {
-                      closePosition(h.symbol, h.currentPrice);
-                      toast.success(`Closed ${h.symbol}`);
-                    }}
-                    className="rounded-lg border border-loss/30 px-3 py-1 text-xs font-sans text-loss transition hover:bg-loss/10"
-                  >
-                    Close
-                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSelect?.(h.symbol);
+                      }}
+                      className="rounded-lg border border-gold-primary/25 px-2.5 py-1 text-xs font-sans text-gold-primary transition hover:bg-gold-primary/10"
+                    >
+                      Details
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        closePosition(h.symbol, h.currentPrice);
+                        toast.success(`Closed ${h.symbol}`);
+                      }}
+                      className="rounded-lg border border-loss/30 px-2.5 py-1 text-xs font-sans text-loss transition hover:bg-loss/10"
+                    >
+                      Close
+                    </button>
+                  </div>
                 </td>
               </tr>
             );

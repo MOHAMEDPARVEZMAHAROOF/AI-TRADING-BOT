@@ -130,6 +130,16 @@ export default function TradingPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [s.symbol, s.range]);
 
+  // Deep-link support: /trading?symbol=AAPL auto-loads that stock.
+  const didInit = useRef(false);
+  useEffect(() => {
+    if (didInit.current) return;
+    didInit.current = true;
+    const sym = new URLSearchParams(window.location.search).get("symbol");
+    if (sym) selectStock(sym.toUpperCase());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const quote = s.quote;
   const up = (quote?.changePercent ?? 0) >= 0;
   const currency = currencyForSymbol(s.symbol ?? undefined);

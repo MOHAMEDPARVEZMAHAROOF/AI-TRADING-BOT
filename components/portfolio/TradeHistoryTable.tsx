@@ -5,7 +5,13 @@ import { format, formatDistanceStrict } from "date-fns";
 import type { Trade } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-export function TradeHistoryTable({ trades }: { trades: Trade[] }) {
+export function TradeHistoryTable({
+  trades,
+  onSelect,
+}: {
+  trades: Trade[];
+  onSelect?: (symbol: string) => void;
+}) {
   const closed = trades.filter((t) => t.status !== "OPEN");
 
   const exportCSV = () => {
@@ -73,7 +79,11 @@ export function TradeHistoryTable({ trades }: { trades: Trade[] }) {
               {closed.map((t) => {
                 const win = (t.pnl ?? 0) >= 0;
                 return (
-                  <tr key={t.id} className="border-t border-white/5">
+                  <tr
+                    key={t.id}
+                    onClick={() => onSelect?.(t.symbol)}
+                    className="cursor-pointer border-t border-white/5 transition hover:bg-white/[0.03]"
+                  >
                     <td className="py-2 pr-3 font-semibold text-white">{t.symbol}</td>
                     <td className="py-2 pr-3 text-white/60">{t.type}</td>
                     <td className="py-2 pr-3 text-white/70">{t.currency}{t.entryPrice.toFixed(2)}</td>
@@ -82,12 +92,8 @@ export function TradeHistoryTable({ trades }: { trades: Trade[] }) {
                     </td>
                     <td className="py-2 pr-3 text-white/70">{t.quantity}</td>
                     <td className={cn("py-2 pr-3", win ? "text-profit" : "text-loss")}>
-                      {win ? "+" : ""}
-                      {t.currency}
-                      {(t.pnl ?? 0).toFixed(2)}
-                      <span className="ml-1 text-[10px] opacity-70">
-                        ({(t.pnlPercent ?? 0).toFixed(1)}%)
-                      </span>
+                      {win ? "+" : ""}{t.currency}{(t.pnl ?? 0).toFixed(2)}
+                      <span className="ml-1 text-[10px] opacity-70">({(t.pnlPercent ?? 0).toFixed(1)}%)</span>
                     </td>
                     <td className="py-2 pr-3 text-white/50">
                       {t.exitTime ? formatDistanceStrict(t.entryTime, t.exitTime) : "—"}

@@ -9,8 +9,9 @@ import { HoldingsTable } from "@/components/portfolio/HoldingsTable";
 import { TradeHistoryTable } from "@/components/portfolio/TradeHistoryTable";
 import { AllocationDonut } from "@/components/portfolio/AllocationDonut";
 import { NotificationsPanel } from "@/components/portfolio/NotificationsPanel";
+import { PositionDetailModal } from "@/components/portfolio/PositionDetailModal";
 import { usePortfolioStore } from "@/lib/store/portfolioStore";
-import { getQuotesClient } from "@/lib/api/client";
+import { getMarketQuotes } from "@/lib/api/client";
 import { useHydrated } from "@/lib/hooks/useHydrated";
 
 const PnLChart = dynamic(() => import("@/components/portfolio/PnLChart").then((m) => m.PnLChart), {
@@ -22,6 +23,7 @@ export default function PortfolioPage() {
   const hydrated = useHydrated();
   const store = usePortfolioStore();
   const [refreshing, setRefreshing] = useState(false);
+  const [selected, setSelected] = useState<string | null>(null);
 
   const holdings = store.holdings;
   const trades = store.trades;
@@ -32,7 +34,7 @@ export default function PortfolioPage() {
     if (!symbols.length) return;
     setRefreshing(true);
     try {
-      const quotes = await getQuotesClient(symbols);
+      const quotes = await getMarketQuotes(symbols);
       const prices: Record<string, number> = {};
       for (const q of quotes) prices[q.symbol] = q.price;
       usePortfolioStore.getState().updatePrices(prices);
@@ -43,7 +45,6 @@ export default function PortfolioPage() {
     }
   }, []);
 
-  // Auto-refresh holding prices every 30s.
   useEffect(() => {
     if (!hydrated) return;
     refreshPrices();
@@ -101,9 +102,7 @@ export default function PortfolioPage() {
       <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
         <div className="glass-card p-4">
           <h3 className="mb-3 font-display text-base font-semibold text-white">Portfolio Value</h3>
-          <div className="h-[280px]">
-            {hydrated && <PnLChart data={store.valueHistory} />}
-          </div>
+          <div className="h-[280px]">{hydrated && <PnLChart data={store.valueHistory} />}</div>
         </div>
         <div className="glass-card p-4">
           <h3 className="mb-3 font-display text-base font-semibold text-white">Asset Allocation</h3>
@@ -112,14 +111,19 @@ export default function PortfolioPage() {
       </div>
 
       <div className="glass-card p-4">
-        <h3 className="mb-3 font-display text-base font-semibold text-white">Holdings</h3>
-        {hydrated && <HoldingsTable holdings={holdings} />}
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="font-display text-base font-semibold text-white">Holdings</h3>
+          <span className="text-[11px] text-white/40">Tap a position for full details</span>
+        </div>
+        {hydrated && <HoldingsTable holdings={holdings} onSelect={setSelected} />}
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr]">
-        <div className="glass-card p-4">{hydrated && <TradeHistoryTable trades={trades} />}</div>
+        <div className="glass-card p-4">{hydrated && <TradeHistoryTable trades={trades} onSelect={setSelected} />}</div>
         <div className="glass-card p-4">{hydrated && <NotificationsPanel notifications={notifications} />}</div>
       </div>
+
+      {selected && <PositionDetailModal symbol={selected} onClose={() => setSelected(null)} />}
     </div>
   );
 }
