@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { CLAUDE_MODEL, extractJSON, getAnthropicClient, isAnthropicConfigured } from "@/lib/api/anthropic";
+import { extractJSON, groqComplete, isLLMConfigured } from "@/lib/api/llm";
 import { buildAgentDecisionPrompt, localFallbackSignal } from "@/lib/analysis/aiAnalysis";
 import { gatherAnalysis } from "@/lib/analysis/gather";
 import type { AISignal } from "@/lib/types";
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  if (!isAnthropicConfigured()) {
+  if (!isLLMConfigured()) {
     return NextResponse.json({
       signal: localFallbackSignal(input),
       score: input.score,
@@ -40,21 +40,15 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const client = getAnthropicClient();
-    const msg = await client.messages.create({
-      model: CLAUDE_MODEL,
-      max_tokens: 1000,
-      messages: [{ role: "user", content: buildAgentDecisionPrompt(input, input.score) }],
+    const text = await groqComplete(buildAgentDecisionPrompt(input, input.score), {
+      json: true,
+      maxTokens: 900,
     });
-    const text = msg.content
-      .filter((b) => b.type === "text")
-      .map((b) => (b as { text: string }).text)
-      .join("");
     const parsed = extractJSON<AISignal>(text);
     return NextResponse.json({
       signal: parsed ?? localFallbackSignal(input),
       score: input.score,
-      source: parsed ? "claude" : "local-fallback",
+      source: parsed ? "groq" : "local-fallback",
     });
   } catch (err) {
     return NextResponse.json({

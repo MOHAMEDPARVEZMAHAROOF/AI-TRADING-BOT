@@ -1,15 +1,19 @@
 import { NextRequest } from "next/server";
-import { CLAUDE_MODEL, getAnthropicClient, isAnthropicConfigured } from "@/lib/api/anthropic";
+import { groqStreamText, isLLMConfigured } from "@/lib/api/llm";
 import { buildAnalysisPrompt, localFallbackSignal } from "@/lib/analysis/aiAnalysis";
 import { gatherAnalysis } from "@/lib/analysis/gather";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
+const SYSTEM =
+  "You are an expert quantitative trading analyst. Respond ONLY with a single valid JSON object matching the requested schema — no markdown, no prose.";
+
 /**
  * POST /api/ai/analyse  Body: { symbol }
- * Streams Claude's JSON analysis back as plain text for a live typing effect.
- * Falls back to a deterministic locally-computed signal if Claude is unavailable.
+ * Streams the Groq model's JSON analysis back as plain text for a live typing
+ * effect. Falls back to a deterministic locally-computed signal if Groq is
+ * unavailable.
  */
 export async function POST(req: NextRequest) {
   let symbol: string;
@@ -35,50 +39,33 @@ export async function POST(req: NextRequest) {
 
   const encoder = new TextEncoder();
 
-  if (!isAnthropicConfigured()) {
-    const fallback = localFallbackSignal(input);
-    const text = JSON.stringify(fallback, null, 2);
-    const stream = new ReadableStream({
+  const streamFallback = () => {
+    const text = JSON.stringify(localFallbackSignal(input), null, 2);
+    return new ReadableStream({
       start(controller) {
         controller.enqueue(encoder.encode(text));
         controller.close();
       },
     });
-    return new Response(stream, {
+  };
+
+  if (!isLLMConfigured()) {
+    return new Response(streamFallback(), {
       headers: { "Content-Type": "text/plain; charset=utf-8", "X-AI-Source": "local-fallback" },
     });
   }
 
-  const prompt = buildAnalysisPrompt(input);
-
-  const stream = new ReadableStream({
-    async start(controller) {
-      try {
-        const client = getAnthropicClient();
-        const messageStream = client.messages.stream({
-          model: CLAUDE_MODEL,
-          max_tokens: 1200,
-          messages: [{ role: "user", content: prompt }],
-        });
-        for await (const event of messageStream) {
-          if (
-            event.type === "content_block_delta" &&
-            event.delta.type === "text_delta"
-          ) {
-            controller.enqueue(encoder.encode(event.delta.text));
-          }
-        }
-        controller.close();
-      } catch (err) {
-        // Stream the local fallback so the UI still resolves.
-        const fallback = localFallbackSignal(input);
-        controller.enqueue(encoder.encode(JSON.stringify(fallback, null, 2)));
-        controller.close();
-      }
-    },
-  });
-
-  return new Response(stream, {
-    headers: { "Content-Type": "text/plain; charset=utf-8", "X-AI-Source": "claude" },
-  });
+  try {
+    const stream = await groqStreamText(buildAnalysisPrompt(input), {
+      system: SYSTEM,
+      maxTokens: 1100,
+    });
+    return new Response(stream, {
+      headers: { "Content-Type": "text/plain; charset=utf-8", "X-AI-Source": "groq" },
+    });
+  } catch {
+    return new Response(streamFallback(), {
+      headers: { "Content-Type": "text/plain; charset=utf-8", "X-AI-Source": "local-fallback" },
+    });
+  }
 }

@@ -49,7 +49,7 @@ export function AIAnalysisPanel({
           <div>
             <h3 className="font-display text-base font-semibold text-white">AI Analysis</h3>
             <p className="text-xs text-white/45">
-              {source === "claude" ? "Powered by Claude Sonnet 4" : source === "local-fallback" ? "Local technical engine" : "Quantitative analyst"}
+              {source === "groq" ? "Powered by Groq · Llama 3.3 70B" : source === "local-fallback" ? "Local technical engine" : "Quantitative analyst"}
             </p>
           </div>
         </div>
