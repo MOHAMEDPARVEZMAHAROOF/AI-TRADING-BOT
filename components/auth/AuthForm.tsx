@@ -41,21 +41,14 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
           if (signInErr) throw signInErr;
         }
 
-        // Send a themed welcome email (best-effort).
-        fetch("/api/notify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type: "welcome", to: email, name: name || email }),
-        }).catch(() => {});
-
-        toast.success("Account created — welcome to Aurum! 🎉");
+        toast.success("Account created — check your email for a verification code");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success("Welcome back!");
       }
 
-      router.push(redirectTo);
+      router.push(isSignup ? "/verify" : redirectTo);
       router.refresh();
     } catch (err) {
       toast.error((err as Error).message || "Authentication failed");

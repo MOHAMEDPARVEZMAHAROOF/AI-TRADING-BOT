@@ -204,3 +204,9 @@ body {
 .text-loss {
   color: var(--red-loss);
 }
+
+/* Ticker tape marquee */
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}

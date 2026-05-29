@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { DM_Sans, Playfair_Display, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ToasterProvider } from "@/components/shared/ToasterProvider";
@@ -16,10 +16,38 @@ const jetbrains = JetBrains_Mono({
   display: "swap",
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://aurum-ai-trading.vercel.app";
+
 export const metadata: Metadata = {
-  title: "Aurum — AI Trading Software",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "Aurum — AI Trading Software",
+    template: "%s · Aurum",
+  },
   description:
-    "Premium AI-powered trading: manual AI assistant + autonomous multi-agent trader. Paper-trading platform.",
+    "Premium AI-powered trading: a manual AI assistant with live charts and an autonomous multi-agent trader. Real-time market data, Groq AI analysis. Paper-trading platform.",
+  applicationName: "Aurum",
+  keywords: ["AI trading", "stock analysis", "trading bot", "autonomous trading", "TradingView", "Groq"],
+  openGraph: {
+    type: "website",
+    title: "Aurum — AI Trading Software",
+    description:
+      "Real-time markets, Groq AI analysis, and an autonomous multi-agent trader. Paper-trading platform.",
+    url: siteUrl,
+    siteName: "Aurum",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Aurum — AI Trading Software",
+    description: "Real-time markets, Groq AI analysis, and autonomous trading agents.",
+  },
+  icons: { icon: "/icon.svg", apple: "/icon.svg" },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0a0a0f",
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

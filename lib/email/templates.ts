@@ -5,6 +5,7 @@
 
 export type EmailType =
   | "welcome"
+  | "verify"
   | "trade_executed"
   | "target_hit"
   | "stop_hit"
@@ -29,6 +30,7 @@ export interface EmailPayload {
   confidence?: number;
   source?: string;
   appUrl?: string;
+  code?: string;
 }
 
 const GOLD = "#FFD700";
@@ -117,6 +119,18 @@ export function buildEmail(p: EmailPayload): { subject: string; html: string } {
   const company = p.companyName || sym;
 
   switch (p.type) {
+    case "verify": {
+      const code = p.code || "------";
+      const inner =
+        heading("Verify your email", "Enter the 6-digit code below to activate your Aurum account. This code expires in 10 minutes.") +
+        `<div style="text-align:center;margin:8px 0 20px;padding:24px;background:rgba(255,215,0,0.06);border:1px solid rgba(255,215,0,0.25);border-radius:16px;">
+          <div style="font-size:12px;text-transform:uppercase;letter-spacing:1px;color:${MUTED};margin-bottom:8px;">Verification code</div>
+          <div style="font-family:'Courier New',monospace;font-size:40px;font-weight:800;letter-spacing:12px;color:${GOLD};">${escape(code)}</div>
+        </div>
+        <p style="font-size:13px;color:${MUTED};text-align:center;">Didn't request this? You can safely ignore this email.</p>`;
+      return { subject: `${escape(code)} is your Aurum verification code`, html: shell(inner, `Your Aurum verification code is ${escape(code)}`, appUrl) };
+    }
+
     case "welcome": {
       const inner =
         heading(`Welcome aboard, ${escape(p.name || "Trader")}! 🎉`,

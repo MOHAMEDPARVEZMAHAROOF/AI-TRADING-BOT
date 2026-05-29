@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import toast from "react-hot-toast";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { StockSearchBar } from "@/components/trading/StockSearchBar";
+import { TickerTape } from "@/components/trading/TickerTape";
 import { MarketWatchlist } from "@/components/trading/MarketWatchlist";
 import { AIAnalysisPanel } from "@/components/trading/AIAnalysisPanel";
 import { OrderPanel } from "@/components/trading/OrderPanel";
@@ -146,6 +147,7 @@ export default function TradingPage() {
 
   return (
     <div className="mx-auto max-w-[1600px] space-y-4">
+      <TickerTape />
       <StockSearchBar onSelect={selectStock} />
 
       {!s.symbol ? (

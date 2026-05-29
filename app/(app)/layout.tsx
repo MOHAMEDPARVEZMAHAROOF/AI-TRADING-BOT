@@ -13,9 +13,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, email, email_notifications")
+    .select("full_name, email, email_notifications, email_verified")
     .eq("id", user.id)
     .maybeSingle();
+
+  // Enforce email verification before granting access to the app.
+  if (profile && profile.email_verified === false) redirect("/verify");
 
   const displayName =
     profile?.full_name || (user.user_metadata?.full_name as string) || user.email || "Trader";
