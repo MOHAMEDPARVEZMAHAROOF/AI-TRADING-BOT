@@ -6,6 +6,14 @@ import { flagForExchange } from "@/lib/utils";
 // Suppress noisy survey/validation notices from the library.
 yahooFinance.suppressNotices?.(["yahooSurvey", "ripHistorical"]);
 
+// Yahoo throttles (HTTP 429) requests that use the library's default User-Agent
+// from datacenter IPs. Sending a browser-like UA reliably returns 200 responses.
+const BROWSER_UA =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+const MODULE_OPTS = {
+  fetchOptions: { headers: { "User-Agent": BROWSER_UA } },
+} as const;
+
 interface CacheEntry<T> {
   value: T;
   expires: number;
@@ -27,7 +35,7 @@ export async function getQuote(symbol: string): Promise<StockQuote> {
   const cached = getCached<StockQuote>(key);
   if (cached) return cached;
 
-  const q = await yahooFinance.quote(symbol);
+  const q = await yahooFinance.quote(symbol, {}, MODULE_OPTS);
   if (!q || typeof q.regularMarketPrice !== "number") {
     throw new Error(`No quote data for ${symbol}`);
   }
@@ -85,19 +93,15 @@ export async function getHistory(
   period1.setDate(period1.getDate() - days);
 
   // Use chart() which is the supported successor to historical().
-  const chart = await yahooFinance.chart(symbol, {
-    period1,
-    period2,
-    interval,
-  });
+  const chart = await yahooFinance.chart(
+    symbol,
+    { period1, period2, interval },
+    MODULE_OPTS
+  );
 
   const rows = (chart.quotes ?? [])
     .filter(
-      (r) =>
-        r.open != null &&
-        r.high != null &&
-        r.low != null &&
-        r.close != null
+      (r) => r.open != null && r.high != null && r.low != null && r.close != null
     )
     .map((r) => {
       const d = new Date(r.date);
@@ -122,7 +126,11 @@ export async function searchSymbols(query: string): Promise<SearchResult[]> {
   const cached = getCached<SearchResult[]>(key);
   if (cached) return cached;
 
-  const res = await yahooFinance.search(query, { newsCount: 0, quotesCount: 12 });
+  const res = await yahooFinance.search(
+    query,
+    { newsCount: 0, quotesCount: 12 },
+    MODULE_OPTS
+  );
   const out: SearchResult[] = (res.quotes ?? [])
     .filter((q: any) => q.symbol && (q.isYahooFinance ?? true))
     .map((q: any) => ({
