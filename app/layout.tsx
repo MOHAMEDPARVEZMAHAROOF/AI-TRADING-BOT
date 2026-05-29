@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { DM_Sans, Playfair_Display, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-import { Sidebar } from "@/components/layout/Sidebar";
-import { TopBar } from "@/components/layout/TopBar";
 import { ToasterProvider } from "@/components/shared/ToasterProvider";
 
 const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-dm-sans", display: "swap" });
@@ -31,13 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="app-background" />
         <div className="grid-overlay" />
         <ToasterProvider />
-        <div className="flex min-h-screen">
-          <Sidebar />
-          <div className="flex flex-1 flex-col min-w-0 lg:ml-[260px]">
-            <TopBar />
-            <main className="flex-1 p-4 md:p-6">{children}</main>
-          </div>
-        </div>
+        {children}
       </body>
     </html>
   );

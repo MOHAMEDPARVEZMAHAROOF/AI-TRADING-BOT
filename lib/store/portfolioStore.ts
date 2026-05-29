@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware";
 import type { Holding, NotificationItem, Trade } from "@/lib/types";
 import { STARTING_BALANCE } from "@/lib/constants";
 import { uid } from "@/lib/utils";
+import { notify } from "@/lib/notify";
 
 export interface BuyOrder {
   symbol: string;
@@ -127,6 +128,19 @@ export const usePortfolioStore = create<PortfolioState>()(
           };
         });
         get().snapshotValue();
+
+        notify({
+          type: order.source === "auto" ? "agent_trade" : "trade_executed",
+          symbol: order.symbol,
+          companyName: order.companyName,
+          quantity: order.quantity,
+          price: order.price,
+          targetPrice: order.targetPrice,
+          stopLoss: order.stopLoss,
+          confidence: order.aiConfidence,
+          currency: order.currency,
+          source: order.source,
+        });
         return { ok: true, message: `Bought ${order.quantity} ${order.symbol}` };
       },
 
@@ -147,7 +161,6 @@ export const usePortfolioStore = create<PortfolioState>()(
                 )
               : state.holdings.filter((h) => h.symbol !== symbol);
 
-          // Close the matching open trade(s) of this symbol.
           let closed = false;
           const trades = state.trades.map((t) => {
             if (!closed && t.symbol === symbol && t.status === "OPEN") {
@@ -187,6 +200,24 @@ export const usePortfolioStore = create<PortfolioState>()(
           };
         });
         get().snapshotValue();
+
+        notify({
+          type:
+            reason === "TARGET_HIT"
+              ? "target_hit"
+              : reason === "STOP_HIT"
+              ? "stop_hit"
+              : "position_closed",
+          symbol,
+          companyName: holding.companyName,
+          quantity: qty,
+          entryPrice: holding.avgEntry,
+          exitPrice: price,
+          pnl,
+          pnlPercent,
+          currency: holding.currency,
+          source: holding.source,
+        });
         return { ok: true, message: `Sold ${qty} ${symbol}` };
       },
 
@@ -202,7 +233,6 @@ export const usePortfolioStore = create<PortfolioState>()(
           );
           return { holdings };
         });
-        // Auto-close on target/stop for any holding whose price crossed a level.
         const holdings = get().holdings;
         for (const h of holdings) {
           const price = prices[h.symbol];
