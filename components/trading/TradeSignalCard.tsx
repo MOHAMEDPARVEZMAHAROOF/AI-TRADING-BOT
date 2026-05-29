@@ -98,7 +98,7 @@ export function TradeSignalCard({
         onClick={onExecute}
         className="mt-4 w-full rounded-xl bg-gradient-to-r from-gold-primary to-gold-accent py-3 font-semibold text-bg-primary transition hover:shadow-gold-glow"
       >
-        Execute Demo Trade
+        Execute Trade
       </button>
     </motion.div>
   );

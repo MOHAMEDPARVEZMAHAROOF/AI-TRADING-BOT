@@ -60,7 +60,7 @@ export default function PortfolioPage() {
     <div className="mx-auto max-w-[1600px] space-y-4">
       <div className="flex items-center justify-between">
         <div className="rounded-xl border border-gold-primary/15 bg-gold-primary/5 px-4 py-2 text-xs text-gold-primary">
-          DEMO MODE — virtual $100,000 starting balance.
+          Paper portfolio · $100,000 virtual starting capital.
         </div>
         <div className="flex gap-2">
           <button
@@ -71,7 +71,7 @@ export default function PortfolioPage() {
           </button>
           <button
             onClick={() => {
-              if (confirm("Reset the demo portfolio? This clears all holdings and history.")) {
+              if (confirm("Reset your portfolio? This clears all holdings and history.")) {
                 store.reset();
                 toast.success("Portfolio reset to $100,000");
               }

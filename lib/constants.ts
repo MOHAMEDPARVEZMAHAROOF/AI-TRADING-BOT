@@ -15,6 +15,18 @@ export const INDIA_WATCHLIST = [
 
 export const FULL_WATCHLIST = [...INTL_WATCHLIST, ...INDIA_WATCHLIST];
 
+// Curated, fast-loading basket shown on the trading page markets panel.
+export const MARKETS_US = [
+  "AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "META", "TSLA", "AMD",
+  "NFLX", "JPM", "V", "COIN", "PLTR", "UBER",
+];
+export const MARKETS_INDIA = [
+  "RELIANCE.NS", "TCS.NS", "HDFCBANK.NS", "INFY.NS", "ICICIBANK.NS",
+  "SBIN.NS", "BHARTIARTL.NS", "ITC.NS", "TATAMOTORS.NS", "MARUTI.NS",
+  "SUNPHARMA.NS", "TITAN.NS",
+];
+export const MARKETS_WATCHLIST = [...MARKETS_US, ...MARKETS_INDIA];
+
 // Risk-management thresholds for the autonomous trader.
 export const RISK = {
   maxSinglePositionPct: 0.2, // max 20% of portfolio in one stock

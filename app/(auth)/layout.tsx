@@ -25,13 +25,13 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             <ul className="space-y-4">
               <Feature icon={<TrendingUp className="h-5 w-5" />} title="AI Trading Assistant" desc="Live charts, technical analysis & Claude-powered buy/sell calls." />
               <Feature icon={<Bot className="h-5 w-5" />} title="Autonomous Agents" desc="A multi-agent system that scans, decides & trades on its own." />
-              <Feature icon={<ShieldCheck className="h-5 w-5" />} title="Risk-Managed Demo" desc="Practice with $100,000 virtual capital — zero real risk." />
+              <Feature icon={<ShieldCheck className="h-5 w-5" />} title="Risk-Managed" desc="Practice with $100,000 virtual capital — zero real risk." />
             </ul>
           </div>
 
           <p className="flex items-center gap-2 text-xs text-white/40">
             <Sparkles className="h-3.5 w-3.5 text-gold-primary" />
-            DEMO MODE — paper trading only. Not financial advice.
+            Paper-trading platform · Not financial advice.
           </p>
         </div>
 

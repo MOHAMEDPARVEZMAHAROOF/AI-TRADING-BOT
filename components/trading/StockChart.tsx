@@ -53,16 +53,19 @@ export function StockChart({
   chartType,
   signal,
   patterns,
+  livePrice,
 }: {
   candles: OHLCV[];
   chartType: ChartType;
   signal: AISignal | null;
   patterns: PatternResult[];
+  livePrice?: number;
 }) {
   const mainRef = useRef<HTMLDivElement>(null);
   const rsiRef = useRef<HTMLDivElement>(null);
   const macdRef = useRef<HTMLDivElement>(null);
-  const chartsRef = useRef<IChartApi[]>([]);
+  const priceSeriesRef = useRef<ISeriesApi<"Candlestick" | "Line" | "Area"> | null>(null);
+  const lastBarRef = useRef<OHLCV | null>(null);
 
   useEffect(() => {
     if (!mainRef.current || !rsiRef.current || !macdRef.current || candles.length === 0) return;
@@ -89,7 +92,6 @@ export function StockChart({
       height: macdRef.current.clientHeight,
       crosshair: { mode: CrosshairMode.Normal },
     });
-    chartsRef.current = [main, rsi, macd];
 
     const closes = candles.map((c) => c.close);
 
@@ -121,6 +123,8 @@ export function StockChart({
       s.setData(candles.map((c) => ({ time: toTime(c), value: c.close })));
       priceSeries = s;
     }
+    priceSeriesRef.current = priceSeries;
+    lastBarRef.current = candles[candles.length - 1];
 
     // --- Moving average overlays ---
     const addMA = (values: number[], color: string, width: 1 | 2 = 1) => {
@@ -161,7 +165,6 @@ export function StockChart({
         shape: signal.signal === "BUY" ? "arrowUp" : "arrowDown",
         text: `${signal.signal} ${signal.confidence}%`,
       });
-      // Target & stop price lines.
       priceSeries.createPriceLine({
         price: signal.targetPrice,
         color: "#00FF88",
@@ -187,8 +190,7 @@ export function StockChart({
         title: "Entry",
       });
     }
-    const sorted = markers.sort((a, b) => (a.time as number) - (b.time as number));
-    priceSeries.setMarkers(sorted);
+    priceSeries.setMarkers(markers.sort((a, b) => (a.time as number) - (b.time as number)));
 
     // --- Volume (overlay on main, scaled to bottom) ---
     const volSeries = main.addHistogramSeries({
@@ -263,7 +265,6 @@ export function StockChart({
     rsi.timeScale().fitContent();
     macd.timeScale().fitContent();
 
-    // --- Resize ---
     const resize = () => {
       if (mainRef.current) main.applyOptions({ width: mainRef.current.clientWidth, height: mainRef.current.clientHeight });
       if (rsiRef.current) rsi.applyOptions({ width: rsiRef.current.clientWidth, height: rsiRef.current.clientHeight });
@@ -275,12 +276,34 @@ export function StockChart({
     return () => {
       syncFns.forEach((fn) => fn());
       ro.disconnect();
+      priceSeriesRef.current = null;
+      lastBarRef.current = null;
       main.remove();
       rsi.remove();
       macd.remove();
-      chartsRef.current = [];
     };
   }, [candles, chartType, signal, patterns]);
+
+  // --- Live price: update the last bar in place (no chart recreate, no flicker) ---
+  useEffect(() => {
+    const series = priceSeriesRef.current;
+    const last = lastBarRef.current;
+    if (!series || !last || !livePrice || !Number.isFinite(livePrice)) return;
+    if (chartType === "candlestick") {
+      (series as ISeriesApi<"Candlestick">).update({
+        time: last.time as UTCTimestamp,
+        open: last.open,
+        high: Math.max(last.high, livePrice),
+        low: Math.min(last.low, livePrice),
+        close: livePrice,
+      });
+    } else {
+      (series as ISeriesApi<"Line" | "Area">).update({
+        time: last.time as UTCTimestamp,
+        value: livePrice,
+      });
+    }
+  }, [livePrice, chartType]);
 
   return (
     <div className="flex h-full flex-col gap-1">

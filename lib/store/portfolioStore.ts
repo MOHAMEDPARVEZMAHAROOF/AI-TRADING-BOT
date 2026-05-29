@@ -56,7 +56,7 @@ export const usePortfolioStore = create<PortfolioState>()(
         const cost = order.price * order.quantity;
         if (order.quantity <= 0) return { ok: false, message: "Quantity must be positive" };
         if (cost > get().balance) {
-          return { ok: false, message: "Insufficient demo balance" };
+          return { ok: false, message: "Insufficient balance" };
         }
         set((state) => {
           const existing = state.holdings.find((h) => h.symbol === order.symbol);

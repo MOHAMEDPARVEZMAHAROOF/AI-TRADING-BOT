@@ -72,7 +72,7 @@ function shell(inner: string, preheader: string, appUrl: string): string {
         </tr></table>
       </td>
       <td align="right" style="vertical-align:middle;">
-        <span style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:${GOLD};border:1px solid rgba(255,215,0,0.3);padding:5px 10px;border-radius:20px;">Demo Mode</span>
+        <span style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:${GOLD};border:1px solid rgba(255,215,0,0.3);padding:5px 10px;border-radius:20px;">Paper Trading</span>
       </td>
     </tr></table>
   </td></tr>
@@ -84,7 +84,7 @@ function shell(inner: string, preheader: string, appUrl: string): string {
   </td></tr>
   <!-- Footer -->
   <tr><td style="padding:20px 32px;border-top:1px solid rgba(255,255,255,0.06);text-align:center;">
-    <div style="font-size:11px;color:${MUTED};line-height:1.6;">You're receiving this because you enabled notifications on Aurum.<br/>This is a paper-trading demo — no real money is involved. Not financial advice.</div>
+    <div style="font-size:11px;color:${MUTED};line-height:1.6;">You're receiving this because you enabled notifications on Aurum.<br/>This is a paper-trading platform — no real money is involved. Not financial advice.</div>
   </td></tr>
 </table>
 <div style="font-size:11px;color:#555;margin-top:16px;">© ${new Date().getFullYear()} Aurum AI Trading</div>

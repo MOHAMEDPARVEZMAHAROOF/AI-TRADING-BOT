@@ -10,7 +10,7 @@ import { UserMenu } from "./UserMenu";
 const TITLES: Record<string, { title: string; subtitle: string }> = {
   "/trading": { title: "AI Trading Assistant", subtitle: "Search a stock for live AI analysis & signals" },
   "/autonomous": { title: "Autonomous AI Trader", subtitle: "Multi-agent system trading on its own" },
-  "/portfolio": { title: "Demo Portfolio", subtitle: "Holdings, performance & trade history" },
+  "/portfolio": { title: "Portfolio", subtitle: "Holdings, performance & trade history" },
 };
 
 export function TopBar({ userName, userEmail }: { userName: string; userEmail: string }) {

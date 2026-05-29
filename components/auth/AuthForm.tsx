@@ -36,20 +36,19 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
         });
         if (error) throw error;
 
-        // Auto-confirm is enabled server-side, so sign in immediately.
         if (!data.session) {
           const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
           if (signInErr) throw signInErr;
         }
 
-        // Fire a themed welcome email (best-effort).
+        // Send a themed welcome email (best-effort).
         fetch("/api/notify", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ type: "welcome", to: email, name: name || email }),
         }).catch(() => {});
 
-        toast.success("Welcome to Aurum! 🎉");
+        toast.success("Account created — welcome to Aurum! 🎉");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
@@ -63,11 +62,6 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
     } finally {
       setLoading(false);
     }
-  };
-
-  const fillDemo = () => {
-    setEmail("demo@aurum.ai");
-    setPassword("demo123456");
   };
 
   return (
@@ -138,13 +132,6 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
           {isSignup ? "Create account" : "Sign in"}
         </button>
       </form>
-
-      <button
-        onClick={fillDemo}
-        className="mt-3 w-full rounded-xl border border-gold-primary/20 py-2.5 text-sm text-gold-primary transition hover:bg-gold-primary/10"
-      >
-        Use demo credentials
-      </button>
 
       <p className="mt-6 text-center text-sm text-white/50">
         {isSignup ? "Already have an account? " : "New to Aurum? "}

@@ -6,11 +6,23 @@ export async function getQuoteClient(symbol: string): Promise<StockQuote> {
   return res.json();
 }
 
+/**
+ * Fetch quotes for many symbols in a single request (server batches them).
+ */
+export async function getMarketQuotes(symbols: string[]): Promise<StockQuote[]> {
+  if (!symbols.length) return [];
+  const res = await fetch("/api/stock/quotes", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ symbols }),
+  });
+  if (!res.ok) return [];
+  const data = await res.json();
+  return (data.quotes ?? []) as StockQuote[];
+}
+
 export async function getQuotesClient(symbols: string[]): Promise<StockQuote[]> {
-  const results = await Promise.allSettled(symbols.map((s) => getQuoteClient(s)));
-  return results
-    .filter((r): r is PromiseFulfilledResult<StockQuote> => r.status === "fulfilled")
-    .map((r) => r.value);
+  return getMarketQuotes(symbols);
 }
 
 export async function getHistoryClient(
@@ -49,7 +61,7 @@ export async function streamAnalysis(
   if (!res.ok || !res.body) {
     throw new Error((await safeError(res)) || "AI analysis failed");
   }
-  const source = res.headers.get("X-AI-Source") ?? "claude";
+  const source = res.headers.get("X-AI-Source") ?? "groq";
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
   let raw = "";

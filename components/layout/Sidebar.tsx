@@ -77,8 +77,8 @@ export function Sidebar() {
         <div className="glass-card flex items-start gap-2 p-3">
           <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-gold-primary" />
           <div className="text-[11px] leading-snug text-white/55">
-            <span className="font-semibold text-gold-primary">DEMO MODE</span> — paper trading
-            only. No real money is used.
+            <span className="font-semibold text-gold-primary">Paper Trading</span> — practice with
+            virtual capital. Not financial advice.
           </div>
         </div>
       </div>

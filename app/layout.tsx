@@ -19,7 +19,7 @@ const jetbrains = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "Aurum — AI Trading Software",
   description:
-    "Premium AI-powered trading: manual AI assistant + autonomous multi-agent trader. DEMO MODE only.",
+    "Premium AI-powered trading: manual AI assistant + autonomous multi-agent trader. Paper-trading platform.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

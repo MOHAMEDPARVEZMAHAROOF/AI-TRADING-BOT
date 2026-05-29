@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { Bot, Play, Pause, Square, Activity } from "lucide-react";
 import { AgentDashboard } from "@/components/autonomous/AgentDashboard";
 import { AgentActivityFeed } from "@/components/autonomous/AgentActivityFeed";
@@ -9,7 +9,10 @@ import { AutoTradeLog } from "@/components/autonomous/AutoTradeLog";
 import { useAgentStore } from "@/lib/store/agentStore";
 import { usePortfolioStore } from "@/lib/store/portfolioStore";
 import { orchestrator } from "@/lib/agents/agentOrchestrator";
+import { getMarketQuotes } from "@/lib/api/client";
+import { FULL_WATCHLIST } from "@/lib/constants";
 import { useHydrated } from "@/lib/hooks/useHydrated";
+import type { ScanResult } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export default function AutonomousPage() {
@@ -27,10 +30,39 @@ export default function AutonomousPage() {
   const trades = usePortfolioStore((s) => s.trades);
   const getWinRate = usePortfolioStore((s) => s.getWinRate);
 
-  // Keep the store flag in sync if the singleton orchestrator is already running.
   useEffect(() => {
     useAgentStore.getState().setRunning(orchestrator.isRunning);
   }, []);
+
+  // Seed + keep the scanner populated with live quotes for the whole watchlist.
+  const refreshWatchlist = useCallback(async () => {
+    const quotes = await getMarketQuotes(FULL_WATCHLIST);
+    if (!quotes.length) return;
+    const store = useAgentStore.getState();
+    const existing = new Map(store.scanResults.map((r) => [r.symbol, r]));
+    const merged: ScanResult[] = quotes.map((q) => {
+      const prev = existing.get(q.symbol);
+      const strength = Math.min(100, Math.round(45 + Math.abs(q.changePercent) * 6));
+      return {
+        symbol: q.symbol,
+        price: q.price,
+        changePercent: q.changePercent,
+        volume: q.volume,
+        score: prev?.score ?? strength,
+        signalStrength: prev?.flagged ? prev.signalStrength : strength,
+        flagged: prev?.flagged ?? false,
+        reason: prev?.reason ?? "live quote",
+      };
+    });
+    store.setScanResults(merged);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    refreshWatchlist();
+    const id = setInterval(refreshWatchlist, 20_000);
+    return () => clearInterval(id);
+  }, [hydrated, refreshWatchlist]);
 
   const winRate = hydrated ? getWinRate() : 0;
 
@@ -39,11 +71,11 @@ export default function AutonomousPage() {
   const stop = () => {
     orchestrator.stop();
     resetAgents();
+    refreshWatchlist();
   };
 
   return (
     <div className="mx-auto max-w-[1700px] space-y-4">
-      {/* Control panel */}
       <div className="glass-card flex flex-wrap items-center justify-between gap-4 p-4">
         <div className="flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-agent/30 to-gold-primary/20">
@@ -52,13 +84,8 @@ export default function AutonomousPage() {
           <div>
             <h2 className="font-display text-xl font-bold text-white">Autonomous AI Trader</h2>
             <p className="flex items-center gap-1.5 text-xs text-white/50">
-              <span
-                className={cn(
-                  "h-2 w-2 rounded-full",
-                  isRunning ? "animate-pulse bg-profit" : "bg-white/30"
-                )}
-              />
-              {isRunning ? "Live — agents working autonomously" : "Stopped"}
+              <span className={cn("h-2 w-2 rounded-full", isRunning ? "animate-pulse bg-profit" : "bg-white/30")} />
+              {isRunning ? "Live — agents working autonomously" : "Stopped — scanning live prices"}
             </p>
           </div>
         </div>
@@ -97,7 +124,6 @@ export default function AutonomousPage() {
         </div>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <StatCard label="Cycle Count" value={hydrated ? String(cycleCount) : "—"} />
         <StatCard label="Stocks Scanned" value={hydrated ? stocksScanned.toLocaleString() : "—"} />
@@ -106,11 +132,11 @@ export default function AutonomousPage() {
       </div>
 
       <div className="rounded-xl border border-gold-primary/15 bg-gold-primary/5 px-4 py-2 text-center text-xs text-gold-primary">
-        DEMO MODE — agents trade with virtual money only. {" "}
-        {!isRunning && "Press Start to launch the autonomous trading cycle (runs every 30s)."}
+        {isRunning
+          ? "Agents are scanning, analysing and executing paper trades automatically."
+          : "Press Start to let the AI agents scan the market and trade autonomously (cycle every 30s)."}
       </div>
 
-      {/* 3-column layout */}
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,1fr)]">
         <div className="glass-card p-4">
           <AgentDashboard agents={agents} />
@@ -123,7 +149,6 @@ export default function AutonomousPage() {
         </div>
       </div>
 
-      {/* Auto trades */}
       <div className="glass-card p-4">
         <AutoTradeLog trades={trades} />
       </div>

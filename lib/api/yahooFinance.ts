@@ -57,7 +57,8 @@ export async function getQuote(symbol: string): Promise<StockQuote> {
     pe: q.trailingPE,
     eps: q.epsTrailingTwelveMonths,
   };
-  setCached(key, quote, 30_000);
+  // Short TTL keeps prices feeling live while protecting against rate limits.
+  setCached(key, quote, 10_000);
   return quote;
 }
 
@@ -92,7 +93,6 @@ export async function getHistory(
   const period1 = new Date();
   period1.setDate(period1.getDate() - days);
 
-  // Use chart() which is the supported successor to historical().
   const chart = await yahooFinance.chart(
     symbol,
     { period1, period2, interval },
@@ -116,7 +116,9 @@ export async function getHistory(
       } satisfies OHLCV;
     });
 
-  setCached(key, rows, 60_000);
+  // Intraday ranges use a shorter TTL so the chart updates in near real-time.
+  const ttl = interval === "1d" || interval === "1wk" || interval === "1mo" ? 60_000 : 20_000;
+  setCached(key, rows, ttl);
   return rows;
 }
 

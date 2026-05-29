@@ -55,7 +55,7 @@ export function OrderPanel({
   return (
     <div className="glass-card p-4">
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="font-display text-base font-semibold text-white">Demo Order</h3>
+        <h3 className="font-display text-base font-semibold text-white">Place Order</h3>
         <div className="flex items-center gap-1.5 text-xs text-white/50">
           <Wallet className="h-3.5 w-3.5 text-gold-primary" />
           {hydrated ? formatPrice(balance) : "—"}
@@ -128,7 +128,7 @@ export function OrderPanel({
       >
         {canAfford ? `Buy ${qty} ${quote.symbol}` : "Insufficient Balance"}
       </button>
-      <p className="mt-2 text-center text-[10px] text-white/35">DEMO MODE — not real money</p>
+      <p className="mt-2 text-center text-[10px] text-white/35">Paper trading · virtual funds</p>
     </div>
   );
 }
