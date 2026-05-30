@@ -10,11 +10,11 @@ import { cn, currencyForSymbol, flagForExchange, formatPercent } from "@/lib/uti
 type Tab = "all" | "us" | "india" | "gainers" | "losers";
 
 const TABS: { id: Tab; label: string }[] = [
-  { id: "all", label: "All" },
-  { id: "us", label: "🇺🇸 US" },
+  { id: "all", label: "All Markets" },
+  { id: "us", label: "🇺🇸 International" },
   { id: "india", label: "🇮🇳 India" },
-  { id: "gainers", label: "Gainers" },
-  { id: "losers", label: "Losers" },
+  { id: "gainers", label: "Top Gainers" },
+  { id: "losers", label: "Top Losers" },
 ];
 
 export function MarketWatchlist({
@@ -62,7 +62,7 @@ export function MarketWatchlist({
     <div className="glass-card p-4">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <h3 className="font-display text-base font-semibold text-white">Live Markets</h3>
+          <h3 className="font-display text-base font-semibold text-white">Equity Markets</h3>
           <span className="flex items-center gap-1 rounded-full bg-profit/10 px-2 py-0.5 text-[10px] font-semibold text-profit">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-profit" /> LIVE
           </span>

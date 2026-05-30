@@ -40,17 +40,34 @@ export function currencyForSymbol(symbol?: string): string {
   if (!symbol) return "$";
   const s = symbol.toUpperCase();
   if (s.endsWith(".NS") || s.endsWith(".BO")) return "₹";
+  if (s.includes("-USD") || s.endsWith("=X")) return "$";
   return "$";
 }
 
 export function flagForExchange(exchange?: string, symbol?: string): string {
   const s = (symbol || "").toUpperCase();
   if (s.endsWith(".NS") || s.endsWith(".BO")) return "🇮🇳";
+  if (s.includes("-USD") || s.includes("-USDT")) return "₿";
+  if (s.endsWith("=X")) return "💱";
   const ex = (exchange || "").toUpperCase();
   if (ex.includes("NSE") || ex.includes("BSE") || ex.includes("NSI") || ex.includes("BOM")) return "🇮🇳";
+  if (ex.includes("CCC") || ex.includes("CRYPTO")) return "₿";
+  if (ex.includes("CCY") || ex.includes("FOREX")) return "💱";
   if (ex.includes("LSE") || ex.includes("LON")) return "🇬🇧";
   if (ex.includes("TSE") || ex.includes("TOR")) return "🇨🇦";
   return "🇺🇸";
+}
+
+/** Display-friendly symbol (BTC-USD → BTC, EURUSD=X → EUR/USD). */
+export function displaySymbol(symbol: string): string {
+  const s = symbol.toUpperCase();
+  if (s.endsWith("=X") && s.length >= 6) {
+    const pair = s.replace("=X", "");
+    return `${pair.slice(0, 3)}/${pair.slice(3)}`;
+  }
+  if (s.endsWith(".NS")) return s.replace(".NS", "");
+  if (s.endsWith(".BO")) return s.replace(".BO", "");
+  return s.replace("-USD", "").replace("-USDT", "");
 }
 
 export function uid(prefix = ""): string {

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { TopBar } from "@/components/layout/TopBar";
+import { MarketHoursProvider } from "@/components/markets/MarketHoursProvider";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -30,6 +31,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <TopBar userName={displayName} userEmail={user.email ?? ""} />
         <main className="flex-1 p-4 md:p-6">{children}</main>
       </div>
+      <MarketHoursProvider />
     </div>
   );
 }

@@ -4,11 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { LineChart, Bot, Wallet, Menu, X, Sparkles, Settings } from "lucide-react";
+import { LineChart, Bot, Wallet, Menu, X, Sparkles, Settings, Bitcoin, Banknote } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV = [
-  { href: "/trading", label: "AI Trader", icon: LineChart, desc: "Manual assistant" },
+  { href: "/trading", label: "Equities", icon: LineChart, desc: "US & India stocks" },
+  { href: "/crypto", label: "Crypto", icon: Bitcoin, desc: "24/7 digital assets" },
+  { href: "/forex", label: "Forex", icon: Banknote, desc: "24/5 currency pairs" },
   { href: "/autonomous", label: "Autonomous", icon: Bot, desc: "Agent network" },
   { href: "/portfolio", label: "Portfolio", icon: Wallet, desc: "Holdings & history" },
   { href: "/settings", label: "Settings", icon: Settings, desc: "Profile & alerts" },

@@ -177,3 +177,32 @@ export interface NotificationItem {
   message: string;
   type: "price-alert" | "trade" | "agent" | "info";
 }
+
+export type AssetClass = "equity" | "crypto" | "forex";
+
+export type MarketRegion = "india" | "us" | "crypto" | "forex";
+
+export type MarketSessionEvent = "open" | "close";
+
+export interface MarketSessionStatus {
+  region: MarketRegion;
+  label: string;
+  isOpen: boolean;
+  event: MarketSessionEvent | null;
+  nextChangeAt: number;
+  scheduleLabel: string;
+  timezone: string;
+}
+
+export type LiveBotMarket = "crypto" | "forex";
+
+export interface LiveBotState {
+  market: LiveBotMarket;
+  isRunning: boolean;
+  startedAt: number | null;
+  lastTickAt: number | null;
+  cycleCount: number;
+  tradesExecuted: number;
+  schedule: "24/7" | "24/5";
+  userStopped: boolean;
+}

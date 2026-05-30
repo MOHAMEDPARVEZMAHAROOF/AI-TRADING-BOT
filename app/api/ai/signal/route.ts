@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { extractJSON, groqComplete, isLLMConfigured } from "@/lib/api/llm";
 import { buildAgentDecisionPrompt, localFallbackSignal } from "@/lib/analysis/aiAnalysis";
 import { gatherAnalysis } from "@/lib/analysis/gather";
+import { requireApiUser, sanitizeSymbol } from "@/lib/security/apiAuth";
 import type { AISignal } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -12,14 +13,17 @@ export const maxDuration = 60;
  * Returns a non-streaming structured AISignal. Used by the autonomous agents.
  */
 export async function POST(req: NextRequest) {
-  let symbol: string;
+  const auth = await requireApiUser(req);
+  if (!auth.ok) return auth.response;
+
+  let symbol: string | null;
   try {
     const body = await req.json();
-    symbol = (body.symbol as string)?.toUpperCase();
+    symbol = sanitizeSymbol(body.symbol);
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
-  if (!symbol) return NextResponse.json({ error: "Missing 'symbol'" }, { status: 400 });
+  if (!symbol) return NextResponse.json({ error: "Missing or invalid 'symbol'" }, { status: 400 });
 
   let input;
   try {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getHistory, getQuotesBatch } from "@/lib/api/yahooFinance";
 import { computeIndicatorSnapshot, scoreSnapshot } from "@/lib/analysis/snapshot";
+import { requireApiUser, sanitizeSymbols } from "@/lib/security/apiAuth";
 import type { ScanResult } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -12,10 +13,13 @@ export const maxDuration = 60;
  * returns the top opportunities sorted by score.
  */
 export async function POST(req: NextRequest) {
+  const auth = await requireApiUser(req);
+  if (!auth.ok) return auth.response;
+
   let symbols: string[];
   try {
     const body = await req.json();
-    symbols = Array.isArray(body.symbols) ? body.symbols.slice(0, 60) : [];
+    symbols = sanitizeSymbols(body.symbols, 60);
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }

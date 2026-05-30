@@ -1,15 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getQuote } from "@/lib/api/yahooFinance";
+import { requireApiUser, sanitizeSymbol } from "@/lib/security/apiAuth";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  const symbol = req.nextUrl.searchParams.get("symbol");
+  const auth = await requireApiUser(req);
+  if (!auth.ok) return auth.response;
+
+  const symbol = sanitizeSymbol(req.nextUrl.searchParams.get("symbol") ?? "");
   if (!symbol) {
-    return NextResponse.json({ error: "Missing 'symbol' parameter" }, { status: 400 });
+    return NextResponse.json({ error: "Missing or invalid 'symbol' parameter" }, { status: 400 });
   }
   try {
-    const quote = await getQuote(symbol.toUpperCase());
+    const quote = await getQuote(symbol);
     return NextResponse.json(quote, {
       headers: { "Cache-Control": "s-maxage=30, stale-while-revalidate=30" },
     });

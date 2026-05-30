@@ -41,3 +41,47 @@ export const POPULAR_SYMBOLS = [
   "AAPL", "TSLA", "NVDA", "MSFT", "GOOGL", "AMZN", "META",
   "RELIANCE.NS", "TCS.NS", "INFY.NS", "HDFCBANK.NS",
 ];
+
+/** Major crypto pairs (Yahoo Finance notation, 24/7). */
+export const CRYPTO_WATCHLIST = [
+  "BTC-USD", "ETH-USD", "SOL-USD", "BNB-USD", "XRP-USD",
+  "ADA-USD", "DOGE-USD", "AVAX-USD", "DOT-USD", "LINK-USD",
+  "MATIC-USD", "LTC-USD", "UNI-USD", "ATOM-USD", "NEAR-USD",
+];
+
+export const CRYPTO_MARKETS = [
+  "BTC-USD", "ETH-USD", "SOL-USD", "BNB-USD", "XRP-USD",
+  "ADA-USD", "DOGE-USD", "AVAX-USD", "LINK-USD", "MATIC-USD",
+];
+
+/** Major forex pairs (Yahoo Finance notation, 24/5). */
+export const FOREX_WATCHLIST = [
+  "EURUSD=X", "GBPUSD=X", "USDJPY=X", "AUDUSD=X", "USDCAD=X",
+  "USDCHF=X", "NZDUSD=X", "EURGBP=X", "EURJPY=X", "GBPJPY=X",
+  "AUDJPY=X", "EURCHF=X", "CADJPY=X", "GBPCHF=X", "AUDCAD=X",
+];
+
+export const FOREX_MARKETS = [
+  "EURUSD=X", "GBPUSD=X", "USDJPY=X", "AUDUSD=X", "USDCAD=X",
+  "USDCHF=X", "NZDUSD=X", "EURGBP=X", "EURJPY=X", "GBPJPY=X",
+];
+
+/** Risk thresholds tuned for crypto (higher volatility). */
+export const RISK_CRYPTO = {
+  maxSinglePositionPct: 0.12,
+  dailyLossLimitPct: 0.06,
+  maxOpenPositions: 6,
+  minAIConfidence: 78,
+  minTechnicalScore: 72,
+  positionSizePct: 0.06,
+};
+
+/** Risk thresholds tuned for forex. */
+export const RISK_FOREX = {
+  maxSinglePositionPct: 0.15,
+  dailyLossLimitPct: 0.04,
+  maxOpenPositions: 5,
+  minAIConfidence: 82,
+  minTechnicalScore: 74,
+  positionSizePct: 0.07,
+};
