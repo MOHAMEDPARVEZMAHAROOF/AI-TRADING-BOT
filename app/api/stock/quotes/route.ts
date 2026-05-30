@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getQuotesBatch } from "@/lib/api/yahooFinance";
+import { requireApiUser, sanitizeSymbols } from "@/lib/security/apiAuth";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -11,10 +12,7 @@ export const maxDuration = 30;
  * markets watchlist and the autonomous scanner grid.
  */
 async function handle(symbols: string[]) {
-  const clean = symbols
-    .map((s) => s.trim().toUpperCase())
-    .filter(Boolean)
-    .slice(0, 60);
+  const clean = sanitizeSymbols(symbols, 60);
   if (!clean.length) {
     return NextResponse.json({ error: "No symbols provided", quotes: [] }, { status: 400 });
   }
@@ -26,11 +24,15 @@ async function handle(symbols: string[]) {
 }
 
 export async function GET(req: NextRequest) {
+  const auth = await requireApiUser(req);
+  if (!auth.ok) return auth.response;
   const param = req.nextUrl.searchParams.get("symbols") ?? "";
   return handle(param.split(","));
 }
 
 export async function POST(req: NextRequest) {
+  const auth = await requireApiUser(req);
+  if (!auth.ok) return auth.response;
   try {
     const body = await req.json();
     return handle(Array.isArray(body.symbols) ? body.symbols : []);

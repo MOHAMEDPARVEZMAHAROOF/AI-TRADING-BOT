@@ -5,11 +5,14 @@ import { TrendingUp, TrendingDown, Wallet } from "lucide-react";
 import { usePortfolioStore } from "@/lib/store/portfolioStore";
 import { useHydrated } from "@/lib/hooks/useHydrated";
 import { formatPrice, formatPercent, cn } from "@/lib/utils";
+import { MarketStatusChips } from "@/components/markets/MarketStatusChips";
 import { UserMenu } from "./UserMenu";
 
 const TITLES: Record<string, { title: string; subtitle: string }> = {
-  "/trading": { title: "AI Trading Assistant", subtitle: "Search a stock for live AI analysis & signals" },
-  "/autonomous": { title: "Autonomous AI Trader", subtitle: "Multi-agent system trading on its own" },
+  "/trading": { title: "Equities Desk", subtitle: "US & Indian markets · live AI analysis" },
+  "/crypto": { title: "Crypto Desk", subtitle: "24/7 digital assets · cloud live bot" },
+  "/forex": { title: "Forex Desk", subtitle: "24/5 major pairs · session-aware bot" },
+  "/autonomous": { title: "Autonomous AI Trader", subtitle: "Multi-agent equity network" },
   "/portfolio": { title: "Portfolio", subtitle: "Holdings, performance & trade history" },
 };
 
@@ -32,6 +35,7 @@ export function TopBar({ userName, userEmail }: { userName: string; userEmail: s
       </div>
 
       <div className="flex items-center gap-3">
+        <MarketStatusChips />
         <div className="glass-card hidden items-center gap-3 px-4 py-2 sm:flex">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gold-primary/10">
             <Wallet className="h-4 w-4 text-gold-primary" />

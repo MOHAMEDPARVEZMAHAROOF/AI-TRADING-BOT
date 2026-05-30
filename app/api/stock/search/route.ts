@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { searchSymbols } from "@/lib/api/yahooFinance";
+import { requireApiUser } from "@/lib/security/apiAuth";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
+  const auth = await requireApiUser(req);
+  if (!auth.ok) return auth.response;
+
   const q = req.nextUrl.searchParams.get("q");
   if (!q || !q.trim()) {
     return NextResponse.json({ results: [] });
